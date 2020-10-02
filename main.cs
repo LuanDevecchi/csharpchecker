@@ -31,7 +31,7 @@ while((line = file.ReadLine()) != null)
 {  
 
 	   var splitfields = line.Split(':');
-       var request = (HttpWebRequest)WebRequest.Create("http://localhost/auth/doLogin.php");
+       		var request = (HttpWebRequest)WebRequest.Create("http://localhost/auth/doLogin.php");
        
 		var postData = "email=";
 		postData += splitfields[0];
